@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Code Green – ITT Buonarroti</title>
+<style>
+/* ===== Design tokens (hell / dunkel) ===== */
+:root{--g1:#14803c;--g2:#34d27b;--hd:#14803c;--tx:#10251a;--mu:#526a5c;--bg:#eaf7ef;--gl:rgba(255,255,255,.62);--bd:rgba(255,255,255,.85);--sh:0 10px 40px rgba(20,128,60,.16);--red:#e5383b;--amb:#f5a300;--blu:#2b8be6;color-scheme:light}
+:root[data-theme=dark]{--g1:#1fa355;--hd:#6ff0a8;--tx:#e8f7ee;--mu:#93b3a0;--bg:#07120c;--gl:rgba(20,44,30,.58);--bd:rgba(255,255,255,.09);--sh:0 10px 40px rgba(0,0,0,.55);color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html{scroll-padding-top:90px}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--tx);background:var(--bg);line-height:1.55;min-height:100vh;transition:background .4s,color .4s;
+background-image:radial-gradient(60% 50% at 8% 0,rgba(52,210,123,.35),transparent),radial-gradient(50% 50% at 100% 25%,rgba(43,139,230,.18),transparent),radial-gradient(60% 60% at 50% 100%,rgba(124,242,176,.28),transparent);background-attachment:fixed}
+h1{font-size:clamp(1.7rem,4vw,2.4rem);color:var(--hd);margin-bottom:6px}h2{color:var(--hd);font-size:1.2rem;margin:18px 0 8px}p{margin:6px 0}
+/* ===== Header (schrumpft beim Scrollen) ===== */
+.h{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:calc(14px + env(safe-area-inset-top,0px)) 18px 10px;transition:.3s}
+.h.sc{padding-top:calc(6px + env(safe-area-inset-top,0px));padding-bottom:6px;background:var(--gl);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border-bottom:1px solid var(--bd);box-shadow:var(--sh)}
+.logo{font-weight:800;font-size:1.35rem;transition:.3s;background:linear-gradient(90deg,var(--g1),var(--g2));-webkit-background-clip:text;background-clip:text;color:transparent}.sc .logo{font-size:1.05rem}
+nav{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 auto}
+nav a{white-space:nowrap;padding:7px 13px;border-radius:99px;text-decoration:none;color:var(--tx);font-size:.9rem;font-weight:600;transition:.25s}
+nav a:hover{background:var(--gl)}nav a.on{background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;box-shadow:0 4px 14px rgba(20,128,60,.4)}
+.ib{border:1px solid var(--bd);background:var(--gl);border-radius:50%;width:40px;height:40px;font-size:1.1rem;cursor:pointer;transition:transform .4s}.ib:hover{transform:rotate(25deg) scale(1.1)}
+main{max-width:980px;margin:0 auto;padding:12px 18px calc(60px + env(safe-area-inset-bottom,0px))}
+.page{display:none}.page.on{display:block;animation:in .5s cubic-bezier(.2,.9,.3,1)}@keyframes in{from{opacity:0;transform:translateY(14px)}}
+/* ===== Glas-Karten, Buttons, Badges ===== */
+.c{background:var(--gl);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:22px;box-shadow:var(--sh);padding:20px;margin:14px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:14px 0}.grid .c{margin:0}
+.b{display:inline-block;border:0;border-radius:14px;padding:12px 22px;font:inherit;font-weight:700;color:#fff;text-decoration:none;cursor:pointer;background:linear-gradient(135deg,var(--g1),var(--g2));box-shadow:0 6px 18px rgba(20,128,60,.35);transition:transform .15s,box-shadow .2s}
+.b:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(20,128,60,.45)}.b:active{transform:scale(.95)}.b:disabled{opacity:.45;pointer-events:none}
+.bg{display:inline-block;padding:3px 11px;border-radius:99px;font-size:.75rem;font-weight:700;color:#fff}
+.pr{height:14px;border-radius:9px;background:rgba(127,127,127,.2);overflow:hidden;margin:8px 0}.pr i{display:block;height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,var(--g1),var(--g2));transition:width 1.2s cubic-bezier(.2,.9,.2,1)}
+/* ===== Home ===== */
+.hero{position:relative;overflow:hidden;padding:34px 24px}.hero p{max-width:480px;margin-bottom:14px;font-size:1.1rem}
+.fl{position:absolute;font-size:3.2rem;opacity:.9;pointer-events:none}@keyframes fl{50%{transform:translateY(-16px) rotate(10deg)}}
+.tilt{display:block;text-decoration:none;color:inherit;transition:transform .15s ease-out,box-shadow .3s;transform-style:preserve-3d;position:relative;overflow:hidden}
+.tilt::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,0),rgba(255,255,255,.35),transparent 55%);opacity:0;transition:opacity .3s}.tilt:hover::after{opacity:1}
+.tilt em{font-style:normal;font-size:2.4rem;display:inline-block}
+/* ===== Zähler ===== */
+.st b{display:block;font-size:2.6rem;line-height:1.1;color:var(--hd)}
+.chart{display:flex;align-items:flex-end;gap:10px;height:220px}
+.chart button{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;background:none;border:0;cursor:pointer;color:var(--mu);font:inherit;font-size:.8rem}
+.chart i{display:block;width:100%;height:0;border-radius:12px 12px 4px 4px;background:linear-gradient(0deg,var(--g1),var(--g2));opacity:.5;transition:height .9s cubic-bezier(.2,.9,.2,1),opacity .2s,filter .2s}
+.chart button:hover i{opacity:.8}.chart button.on i{opacity:1;filter:drop-shadow(0 0 10px var(--g2))}.chart b{color:var(--tx)}
+.det{margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(52,210,123,.15)}
+/* ===== Karte ===== */
+.map{position:relative;margin-top:8px}.map svg{display:block;width:100%}.rm{fill:rgba(52,210,123,.14);stroke:var(--g2);stroke-width:2}.map text{fill:var(--tx);font-size:14px;text-anchor:middle}
+.pin{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:3px solid #fff;background:var(--c);font-size:15px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .25s;z-index:2}
+.pin::before,.pin::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--c);opacity:0;animation:ping 2.2s infinite}.pin::after{animation-delay:1.1s}
+@keyframes ping{0%{transform:scale(1);opacity:.9}100%{transform:scale(2.7);opacity:0}}.pin:hover,.pin.on{transform:scale(1.2)}
+.tt{position:absolute;z-index:4;width:max-content;max-width:min(230px,70%);padding:12px 14px;border-radius:16px;background:var(--bg);border:1px solid var(--g2);box-shadow:var(--sh);opacity:0;pointer-events:none;transition:left .45s cubic-bezier(.3,1.3,.5,1),top .45s cubic-bezier(.3,1.3,.5,1),opacity .25s}.tt.on{opacity:1}
+.lg span{margin-right:16px;font-size:.9rem}.lg i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px}
+/* ===== Melden ===== */
+.fw{position:relative;overflow:hidden}.f{margin-bottom:14px}.f label{display:block;font-weight:700;margin-bottom:4px}
+.f input,.f select,.f textarea{width:100%;padding:12px;border-radius:12px;border:2px solid rgba(127,127,127,.3);background:var(--gl);color:var(--tx);font:inherit;transition:.25s}
+.f input:focus,.f textarea:focus,.f select:focus{outline:0;border-color:var(--blu);box-shadow:0 0 0 4px rgba(43,139,230,.2)}
+.f.ok input,.f.ok textarea{border-color:var(--g2)}.f.bad input,.f.bad textarea{border-color:var(--red);animation:shk .35s}.f small{color:var(--mu);font-size:.8rem}.f.ok small{color:var(--g2)}.f.bad small{color:var(--red)}
+.done{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);opacity:0;pointer-events:none;transition:opacity .3s}.done.on{opacity:1}
+.done svg{width:90px;fill:none;stroke:var(--g2);stroke-width:3;stroke-linecap:round}.done circle{stroke-dasharray:150;stroke-dashoffset:150}.done path{stroke-dasharray:40;stroke-dashoffset:40}
+.done.on circle{animation:dr .7s forwards}.done.on path{animation:dr .4s .6s forwards}@keyframes dr{to{stroke-dashoffset:0}}
+.chip{border:1px solid var(--bd);background:var(--gl);color:var(--tx);border-radius:99px;padding:6px 14px;margin:0 6px 6px 0;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;transition:.2s}.chip.on{background:var(--g1);color:#fff}
+.rp{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:8px 0;border-radius:16px;background:var(--gl);border:1px solid var(--bd)}.rp.new{animation:in .6s}.rp span:first-child{flex:1}
+.up{border:2px solid var(--g2);background:none;color:var(--tx);border-radius:12px;padding:5px 11px;font:inherit;font-weight:700;cursor:pointer;transition:.2s}.up:hover{transform:translateY(-2px)}.up.on{background:var(--g2);color:#fff}
+/* ===== Labor ===== */
+.tp{display:flex;align-items:center;gap:12px;text-align:left;color:var(--tx);font:inherit;cursor:pointer;transition:.35s}.tp:hover{transform:translateY(-3px)}
+.tp em{font-style:normal;font-size:1.8rem}.tp span{background:linear-gradient(currentColor,currentColor) 0 55%/0 2px no-repeat;transition:background-size .5s,opacity .4s}
+.tp.on{background:linear-gradient(135deg,rgba(20,128,60,.3),rgba(52,210,123,.3));border-color:var(--g2)}.tp.on span{background-size:100% 2px;opacity:.65}
+.tp u{margin-left:auto;text-decoration:none;flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--g2);color:#fff;transform:scale(0);transition:transform .4s cubic-bezier(.3,1.8,.5,1)}.tp.on u{transform:scale(1)}
+/* ===== Spiel ===== */
+.hud{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;font-weight:700}.hud span{background:var(--gl);border:1px solid var(--bd);padding:5px 12px;border-radius:99px}
+.fire{display:inline-block}@keyframes fr{to{transform:scale(1.3) rotate(10deg)}}
+.arena{position:relative;height:clamp(430px,64vh,540px);margin-top:6px;border-radius:20px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;border:1px solid var(--bd);background:linear-gradient(180deg,rgba(43,139,230,.14),rgba(52,210,123,.2))}
+.arena.shake{animation:shk .45s}@keyframes shk{20%{transform:translate(-8px,3px)}40%{transform:translate(7px,-3px)}60%{transform:translate(-5px,2px)}80%{transform:translate(4px,-1px)}}
+.it{position:absolute;left:0;top:0;width:76px;height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:20px;background:none;border:0;box-shadow:none;cursor:grab;will-change:transform;z-index:2}
+.it span{font-size:2rem;line-height:1.1}.it small{font-size:.72rem;font-weight:700;white-space:nowrap;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+.it.drag{cursor:grabbing;z-index:5;scale:1.15;box-shadow:0 18px 36px rgba(0,0,0,.38);filter:drop-shadow(0 10px 12px rgba(0,0,0,.35))}.it.out{transition:opacity .3s,scale .3s;opacity:0;scale:.2;pointer-events:none}
+.bins{position:absolute;left:8px;right:8px;bottom:8px;display:flex;gap:6px;z-index:1}
+.bin{flex:1;height:86px;border-radius:18px;border:2px dashed var(--c);background:color-mix(in srgb,var(--c) 20%,transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;transition:transform .2s,background .2s}
+.bin b{font-size:1.7rem;font-weight:400}.bin.hov{transform:translateY(-8px) scale(1.07);background:color-mix(in srgb,var(--c) 48%,transparent);border-style:solid}
+.bin.good{animation:gd .5s}.bin.bad{animation:bd .5s}@keyframes gd{40%{transform:scale(1.2);background:var(--c)}}@keyframes bd{30%{background:var(--red);transform:translateX(-6px)}60%{transform:translateX(6px)}}
+.ov{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:14px;background:var(--gl);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow:auto}.ov.off{display:none}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:320px}.sg div{background:var(--gl);border:1px solid var(--bd);border-radius:14px;padding:8px;font-size:.8rem}.sg b{display:block;font-size:1.5rem;color:var(--hd)}
+.bgs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}.bdg{padding:4px 11px;border-radius:99px;font-size:.78rem;font-weight:700;background:linear-gradient(135deg,var(--amb),#ffd36b);color:#3a2a00}.bdg.lock{filter:grayscale(1);opacity:.35}.bdg.new{animation:fr .5s 4 alternate}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
+.pop{position:fixed;z-index:60;pointer-events:none;font-weight:900;font-size:1.6rem;text-shadow:0 2px 8px rgba(0,0,0,.4);animation:pp 1.1s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes pp{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}25%{transform:translate(-50%,-90%) scale(1.6);opacity:1}45%{transform:translate(-50%,-110%) scale(1)}100%{transform:translate(-50%,-260%);opacity:0}}
+details{margin-top:12px;padding:10px 14px;border-radius:14px;background:rgba(52,210,123,.12)}summary{cursor:pointer;font-weight:700;color:var(--hd)}details p{margin-top:8px;color:var(--mu)}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<header class="h" id="hdr">
+  <div class="logo">🌱 Code Green</div>
+  <nav>
+    <a href="#home" data-p="home">Startseite</a><a href="#zaehler" data-p="zaehler">Umwelt-Zähler</a>
+    <a href="#labor" data-p="labor">Labor-Tipps</a><a href="#spiel" data-p="spiel">Spiel</a>
+  </nav>
+  <button class="ib" id="theme" aria-label="Hell/Dunkel">🌙</button>
+</header>
+<main>
+
+<!-- ===== HOME ===== -->
+<section class="page" id="home">
+  <div class="c hero">
+    <span class="fl" style="left:68%;top:10%">🌍</span><span class="fl" style="left:84%;top:52%;animation-delay:-1.6s">♻️</span><span class="fl" style="left:58%;top:68%;animation-delay:-3s">💧</span>
+    <h1>Kleine Taten, große Wirkung!</h1>
+    <p>Unser Ziel ist klar: Das ITT Buonarroti soll umweltfreundlicher werden – und jeder kann mitmachen.</p>
+    <a class="b" href="#spiel">🎮 Jetzt spielen</a>
+  </div>
+  <div class="grid"><a class="c tilt" href="#energie"><em>💡</em><h2>Energie sparen</h2><p>Nach dem Unterricht Licht und Computer komplett ausschalten.</p></a><a class="c tilt" href="#recycling"><em>♻️</em><h2>Richtig recyceln</h2><p>Plastik, Papier und Restmüll richtig trennen.</p></a><a class="c tilt" href="#wasser"><em>💧</em><h2>Digital und Wasser sparen</h2><p>Digitale Dokumente nutzen und eine Trinkflasche mitbringen.</p></a></div>
+  
+</section>
+
+<!-- ===== ENERGIE (Sprecher 1) ===== -->
+<section class="page" id="energie">
+  <h1>1 · Energie sparen</h1>
+  <div class="c">
+    <span class="bg" style="background:var(--g1)">🎤 Sprecher 1</span>
+    <p style="font-size:1.05rem;margin-top:12px">„Hallo zusammen! Heute präsentieren wir unser Poster mit dem Titel: ‚Kleine Taten, große Wirkung!‘ Unser Ziel ist klar: Das ITT Buonarroti soll umweltfreundlicher werden – und jeder kann mitmachen. Ich beginne mit dem ersten Punkt: Energie sparen. Nach dem Unterricht sollten wir immer das Licht und die Computer komplett ausschalten und den Standby-Modus vermeiden. Außerdem ist es wichtig, die Heizung zu prüfen und die Fenster zu schließen, wenn es warm ist. So sparen wir zusammen viel Energie.“</p>
+    <details><summary>🇮🇹 Traduzione italiana</summary><p>«Ciao a tutti! Oggi presentiamo il nostro poster intitolato: "Piccole azioni, grande impatto!". Il nostro obiettivo è chiaro: l'ITT Buonarroti deve diventare più ecologico – e tutti possono partecipare. Inizio io con il primo punto: risparmiare energia. Dopo le lezioni dovremmo sempre spegnere completamente la luce e i computer ed evitare la modalità standby. Inoltre, è importante controllare il riscaldamento e chiudere le finestre quando fa caldo. Così risparmiamo molta energia insieme.»</p></details>
+  </div>
+  <div class="c"><h2>Die Regeln</h2>
+    <span class="chip">💡 Licht aus</span><span class="chip">🖥️ Computer ganz aus</span><span class="chip">⏻ Kein Standby</span><span class="chip">🌡️ Heizung prüfen</span><span class="chip">🪟 Fenster bei Wärme zu</span>
+  </div>
+</section>
+
+<!-- ===== RECYCLING (Sprecher 2) ===== -->
+<section class="page" id="recycling">
+  <h1>2 · Richtig recyceln</h1>
+  <div class="c">
+    <span class="bg" style="background:var(--g1)">🎤 Sprecher 2</span>
+    <p style="font-size:1.05rem;margin-top:12px">„Danke! Ich mache weiter mit dem zweiten Bereich: Richtig recyceln. Wir müssen unseren Müll immer richtig in Plastik, Papier und Restmüll trennen. Alte elektronische Geräte gehören niemals in den normalen Müll, sondern in spezielle Sammelboxen.“</p>
+    <details><summary>🇮🇹 Traduzione italiana</summary><p>«Grazie! Continuo io con il secondo ambito: riciclare correttamente. Dobbiamo sempre separare bene i rifiuti in plastica, carta e indifferenziata. I vecchi dispositivi elettronici non vanno mai nei rifiuti normali, ma negli appositi contenitori di raccolta.»</p></details>
+  </div>
+  <div class="c"><h2>Die Tonnen</h2>
+    <span class="chip">🧴 Plastik</span><span class="chip">📄 Papier</span><span class="chip">🗑️ Restmüll</span><span class="chip">⚡ Elektroschrott-Box</span>
+  </div>
+  <p>Die Elektroschrott-Boxen findest du auf der Karte unter <a href="#karte">Schule mitgestalten</a>.</p>
+</section>
+
+<!-- ===== WASSER & DIGITAL (Sprecher 2) ===== -->
+<section class="page" id="wasser">
+  <h1>3 · Digital und Wasser sparen</h1>
+  <div class="c">
+    <span class="bg" style="background:var(--g1)">🎤 Sprecher 2</span>
+    <p style="font-size:1.05rem;margin-top:12px">„Der dritte Punkt heißt Digital und Wasser sparen: Wir sollten mehr digitale Dokumente statt Papier nutzen und eine Trinkflasche mitbringen, um sie an den Wasserspendern der Schule aufzufüllen.“</p>
+    <details><summary>🇮🇹 Traduzione italiana</summary><p>«Il terzo punto si chiama risparmiare digitale e acqua: dovremmo usare più documenti digitali invece della carta e portare una nostra borraccia da riempire ai distributori d'acqua della scuola.»</p></details>
+  </div>
+  <div class="c"><h2>Das machst du</h2>
+    <span class="chip">📱 Digital statt Papier</span><span class="chip">💧 Eigene Trinkflasche</span><span class="chip">🚰 Wasserspender nutzen</span>
+  </div>
+</section>
+
+<!-- ===== ZÄHLER ===== -->
+<section class="page" id="zaehler">
+  <h1>Der Umwelt-Zähler</h1>
+  <p><b>Unsere Ziele:</b> Wir möchten 500 Plastikflaschen pro Monat und 20 Prozent Papier sparen.</p>
+  <div class="grid">
+    <div class="c st"><b data-n="500">0</b>Ziel: Plastikflaschen pro Monat</div>
+    <div class="c st"><b>20 %</b>Ziel: weniger Papier</div>
+    <div class="c st"><b data-n="35">0</b>Ziel: kg Elektroschrott sammeln</div>
+  </div>
+  <div class="c"><h2>Unser Ziel: Plastikflaschen pro Monat</h2><p style="color:var(--mu)">Tippe auf einen Balken.</p><div class="chart" id="chart"></div><div class="det" id="det"></div>
+    <p style="color:var(--mu);font-size:.8rem">Geplante Zielwerte (Beispiel): bitte anpassen.</p></div>
+  <div class="c"><h2>Unser Ziel für das Schuljahr</h2><p id="goalT"></p></div>
+</section>
+
+<!-- ===== KARTE ===== -->
+<section class="page" id="karte">
+  <h1>Schule mitgestalten: Die interaktive Karte</h1>
+  <p>Unter ‚Schule mitgestalten‘ findet ihr unsere interaktive Schulkarte, um Wasserspender und Müllboxen schnell zu entdecken.</p>
+  <div class="c">
+    <div class="map" id="map">
+      <svg viewBox="0 0 600 340" role="img" aria-label="Plan der Schule">
+        <rect class="rm" x="20" y="20" width="560" height="60" rx="12"/><text x="300" y="56">Haupteingang / Flur</text>
+        <rect class="rm" x="20" y="100" width="170" height="200" rx="12"/><text x="105" y="205">Klassen</text>
+        <rect class="rm" x="210" y="100" width="170" height="200" rx="12"/><text x="295" y="205">Labor</text>
+        <rect class="rm" x="400" y="100" width="180" height="200" rx="12"/><text x="490" y="205">Mensa / Aula</text>
+      </svg>
+      <div class="tt" id="tt"></div>
+    </div>
+    <div class="lg" style="margin-top:12px"><span><i style="background:var(--blu)"></i>Wasserspender</span><span><i style="background:var(--amb)"></i>Elektroschrott-Box</span></div>
+    <p style="color:var(--mu);font-size:.8rem">Schematischer Plan: Positionen bitte an die echte Schule anpassen.</p>
+  </div>
+</section>
+
+<!-- ===== MELDEN ===== -->
+<section class="page" id="melden">
+  <h1>Probleme melden</h1>
+  <p>Hilf uns! Brennt das Licht im Flur unnötig? Ist ein Fenster kaputt? Schreib es hier in das Formular. Wir leiten die Info an den Hausmeister weiter.</p>
+  <div class="c fw">
+    <form id="fm" novalidate>
+      <div class="f"><label for="ort">Wo ist das Problem?</label><input id="ort" placeholder="z. B. Flur, 2. Stock" autocomplete="off"><small>Mindestens 3 Zeichen</small></div>
+      <div class="f"><label for="art">Was ist das Problem?</label><select id="art"><option>Licht brennt unnötig</option><option>Fenster ist kaputt</option><option>Wasserhahn tropft</option><option>Heizung läuft bei offenem Fenster</option><option>Anderes</option></select></div>
+      <div class="f"><label for="txt">Beschreibung</label><textarea id="txt" rows="4" placeholder="Was siehst du genau?"></textarea><small>Mindestens 10 Zeichen</small></div>
+      <button class="b" id="send" disabled>Senden ✉️</button>
+    </form>
+    <div class="done" id="done"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="23"/><path d="M14 27l8 8 16-17"/></svg><h2>Danke!</h2><p>Wir leiten die Info an den Hausmeister weiter.</p></div>
+  </div>
+  <h2>Meldungen der Schüler</h2>
+  <div id="chips"></div><div id="rep"></div>
+</section>
+
+<!-- ===== LABOR ===== -->
+<section class="page" id="labor">
+  <h1>Labor-Tipps</h1>
+  <p>Tipps für das Labor: Bitte schalte den Computer nach dem Unterricht komplett aus. Wirf elektronische Bauteile nicht in den normalen Müll.</p>
+  <div class="c"><div class="pr"><i id="lp"></i></div><p id="lt"></p></div>
+  <div class="grid" id="tips"></div>
+</section>
+
+<!-- ===== SPIEL ===== -->
+<section class="page" id="spiel">
+  <h1>Mülltrennungs-Spiel 🎮</h1>
+  <p>Ziehe jeden Gegenstand in die Tonne mit der gleichen Farbe. Mit einer Serie gibt es mehr Punkte, aber die Gegenstände werden schneller!</p>
+  <div class="c">
+    <div class="hud"><span id="hS">⭐ 0</span><span id="hC">✨ Serie 0 · x1</span><span id="hL">❤️❤️❤️</span><span id="hV">Level 1</span></div>
+    <div class="pr"><i id="hP"></i></div>
+    <div class="arena" id="arena"><div class="bins" id="bins"></div><div class="ov" id="ov"></div></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ===== Helfer ===== */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+/* ===== Theme: System-Einstellung oder manueller Schalter ===== */
+function setTheme(t,save){document.documentElement.dataset.theme=t;$('#theme').textContent=t==='dark'?'☀️':'🌙';if(save)store.set('cg-theme',t)}
+setTheme(store.get('cg-theme',matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+$('#theme').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark',true);
+addEventListener('scroll',()=>$('#hdr').classList.toggle('sc',scrollY>20),{passive:true});
+
+/* ===== Effekte: Konfetti (Canvas) + schwebende Zahlen ===== */
+const cv=$('#fx'),cx=cv.getContext('2d');let P=[],fxRaf=0;
+function fit(){cv.width=innerWidth;cv.height=innerHeight}fit();addEventListener('resize',fit);
+function burst(x,y,n=28){const cols=['#34d27b','#7cf2b0','#f5a300','#2b8be6','#ffffff'];
+  for(let i=0;i<n;i++){const a=Math.random()*6.28,s=2+Math.random()*7;P.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-3,l:1,r:3+Math.random()*4,c:cols[i%5],g:Math.random()*6})}
+  if(!fxRaf)fxRaf=requestAnimationFrame(tickFx)}
+function tickFx(){cx.clearRect(0,0,cv.width,cv.height);P=P.filter(p=>p.l>0);
+  P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.26;p.vx*=.985;p.l-=.017;cx.globalAlpha=Math.max(p.l,0);cx.fillStyle=p.c;cx.save();cx.translate(p.x,p.y);cx.rotate(p.g+=.2);cx.fillRect(-p.r,-p.r/2,p.r*2,p.r);cx.restore()});
+  fxRaf=P.length?requestAnimationFrame(tickFx):0}
+function pop(x,y,t,c){const d=document.createElement('div');d.className='pop';d.textContent=t;d.style.cssText=`left:${x}px;top:${y}px;color:${c}`;document.body.appendChild(d);setTimeout(()=>d.remove(),1100)}
+function count(el,to){const t0=performance.now();(function f(t){const k=Math.min((t-t0)/1100,1);el.textContent=Math.round(to*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)})(t0)}
+
+/* ===== Router (#hash) ===== */
+const pages=['home','energie','recycling','wasser','zaehler','karte','melden','labor','spiel'];
+function route(){const h=location.hash.slice(1),id=pages.includes(h)?h:'home';
+  $$('.page').forEach(p=>p.classList.toggle('on',p.id===id));$$('nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===id));
+  scrollTo(0,0);if(id==='zaehler')enterStats();if(id!=='spiel')stopGame()}
+addEventListener('hashchange',route);
+/* Fallback: i link interni aprono la pagina direttamente, anche se il cambio hash è bloccato */
+document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;e.preventDefault();const h=a.getAttribute('href');if(location.hash!==h)history.replaceState(null,'',h);route()});
+
+/* ===== Home: 3D-Tilt ===== */
+$$('.tilt').forEach(el=>{
+  el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    el.style.transform=`perspective(700px) rotateY(${x*14}deg) rotateX(${-y*14}deg) translateZ(8px)`;el.style.setProperty('--mx',x*100+50+'%');el.style.setProperty('--my',y*100+50+'%')});
+  el.addEventListener('pointerleave',()=>el.style.transform='')});
+
+/* ===== Zähler ===== */
+const M=[['Sep',80],['Okt',150],['Nov',260],['Dez',110],['Jan',200],['Feb',500]],SUM=M.reduce((a,m)=>a+m[1],0);
+$('#chart').innerHTML=M.map((m,k)=>`<button data-k="${k}"><b>${m[1]}</b><i data-h="${m[1]/500*78}"></i>${m[0]}</button>`).join('');
+function pick(k){$$('#chart button').forEach((b,i)=>b.classList.toggle('on',i===k));const v=M[k][1],p=k?M[k-1][1]:0,d=p?Math.round((v-p)/p*100):0;
+  $('#det').innerHTML=`<b>${M[k][0]}</b>: ${v} Flaschen sparen (Ziel) `+(k?`<span class="bg" style="background:${d>=0?'var(--g1)':'var(--red)'}">${d>=0?'+':''}${d} % zum Vormonat</span>`:'')}
+$('#chart').addEventListener('click',e=>{const b=e.target.closest('button');if(b)pick(+b.dataset.k)});
+function enterStats(){$$('[data-n]').forEach(e=>count(e,+e.dataset.n));pick(M.length-1);
+  $$('#chart i').forEach(i=>i.style.height='0');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{$$('#chart i').forEach((i,k)=>{i.style.transitionDelay=k*90+'ms';i.style.height=i.dataset.h+'%'})}));
+  $('#goalT').textContent='Wir möchten im Schuljahr 2.000 Plastikflaschen sparen.'}
+
+/* ===== Karte ===== */
+const PINS=[[25,14.7,'--blu','💧','Wasserspender im Flur','Hier füllst du deine Trinkflasche auf.'],[75,14.7,'--blu','💧','Wasserspender in der Mensa','Auch hier gibt es frisches Wasser.'],
+  [50,47,'--amb','⚡','Elektroschrott-Box im Labor','Alte Kabel, Batterien und Bauteile gehören hierher.'],[17.5,76.5,'--amb','⚡','Elektroschrott-Box bei den Klassen','Praktisch für kaputte Ladekabel und Batterien.']];
+$('#map').insertAdjacentHTML('beforeend',PINS.map((p,i)=>`<button class="pin" data-i="${i}" style="left:${p[0]}%;top:${p[1]}%;--c:var(${p[2]})" aria-label="${p[4]}">${p[3]}</button>`).join(''));
+$('#map').addEventListener('click',e=>{const b=e.target.closest('.pin'),tt=$('#tt');
+  if(!b){tt.classList.remove('on');$$('.pin').forEach(x=>x.classList.remove('on'));return}
+  const p=PINS[+b.dataset.i],sh=p[0]<30?-15:p[0]>70?-85:-50;$$('.pin').forEach(x=>x.classList.toggle('on',x===b));
+  tt.innerHTML=`<b>${p[3]} ${p[4]}</b><br>${p[5]}`;tt.style.left=p[0]+'%';tt.style.top=p[1]+'%';tt.style.transform=`translate(${sh}%,calc(-100% - 30px))`;tt.classList.add('on')});
+
+/* ===== Melden: Live-Validierung, Upvotes, Filter ===== */
+const ST=[['Neu','#2b8be6'],['In Arbeit','#f5a300'],['Erledigt','#14803c']],rules={ort:v=>v.trim().length>=3,txt:v=>v.trim().length>=10};
+let R=[{id:1,t:'Licht im Flur (1. Stock) brennt tagsüber',s:0,v:7},{id:2,t:'Fenster in Klasse 3B lässt sich nicht schließen',s:1,v:4},{id:3,t:'Wasserhahn in der Toilette tropft',s:2,v:2}],nid=4,flt=-1,lastId=0;
+function val(id){const el=$('#'+id),ok=rules[id](el.value),f=el.closest('.f');f.classList.toggle('ok',ok);f.classList.toggle('bad',!ok&&el.value.length>0);return ok}
+function chk(){$('#send').disabled=!(rules.ort($('#ort').value)&&rules.txt($('#txt').value))}
+['ort','txt'].forEach(id=>$('#'+id).addEventListener('input',()=>{val(id);chk()}));
+$('#fm').addEventListener('submit',e=>{e.preventDefault();if($('#send').disabled)return;
+  R.unshift({id:lastId=nid++,t:`${$('#art').value} – ${$('#ort').value.trim()}`,s:0,v:0});flt=-1;renderRep();
+  const r=$('#send').getBoundingClientRect();burst(r.left+r.width/2,r.top,40);$('#done').classList.add('on');
+  setTimeout(()=>{$('#done').classList.remove('on');$('#fm').reset();$$('.f').forEach(f=>f.classList.remove('ok','bad'));chk()},2200)});
+function renderRep(){
+  $('#chips').innerHTML=[['Alle',-1],...ST.map((s,i)=>[s[0],i])].map(([n,i])=>`<button class="chip ${flt===i?'on':''}" data-f="${i}">${n}</button>`).join('');
+  $('#rep').innerHTML=R.filter(r=>flt<0||r.s===flt).map(r=>`<div class="rp ${r.id===lastId?'new':''}"><span>${r.t}</span><span class="bg" style="background:${ST[r.s][1]}">${ST[r.s][0]}</span><button class="up ${r.up?'on':''}" data-id="${r.id}">▲ ${r.v}</button></div>`).join('')||'<p>Keine Meldungen.</p>'}
+$('#chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(b){flt=+b.dataset.f;lastId=0;renderRep()}});
+$('#rep').addEventListener('click',e=>{const b=e.target.closest('.up');if(!b)return;const r=R.find(x=>x.id===+b.dataset.id);r.up=!r.up;r.v+=r.up?1:-1;lastId=0;renderRep()});
+renderRep();
+
+/* ===== Labor: Checkliste mit localStorage ===== */
+const TIPS=[['💻','Schalte den Computer nach dem Unterricht komplett aus.'],['🔌','Wirf elektronische Bauteile nicht in den normalen Müll.'],['📄','Drucke nur, wenn es wirklich nötig ist. Nutze PDFs.'],['💧','Bring deine eigene Trinkflasche mit.'],['💡','Mach das Licht aus, wenn du den Raum verlässt.']];
+let done=store.get('cg-tips',[]);
+$('#tips').innerHTML=TIPS.map((t,i)=>`<button class="c tp ${done.includes(i)?'on':''}" data-i="${i}"><em>${t[0]}</em><span>${t[1]}</span><u>✓</u></button>`).join('');
+function updTips(){$('#lp').style.width=done.length/TIPS.length*100+'%';$('#lt').textContent=`${done.length} von ${TIPS.length} Tipps erledigt`+(done.length===TIPS.length?' – Super, du bist ein Eco-Profi! 🎉':'')}
+$('#tips').addEventListener('click',e=>{const b=e.target.closest('.tp');if(!b)return;const i=+b.dataset.i,on=!done.includes(i);
+  done=on?[...done,i]:done.filter(x=>x!==i);store.set('cg-tips',done);b.classList.toggle('on',on);updTips();
+  if(on){const r=b.getBoundingClientRect();burst(r.right-30,r.top+r.height/2,done.length===TIPS.length?70:16)}});
+updTips();
+
+/* ===== Spiel: fallende Gegenstände + Drag & Drop (Maus und Touch) ===== */
+const BIN=[['Elektro','⚡','#f5a300'],['Papier','📄','#2b8be6'],['Plastik','🧴','#ff7a1a'],['Bio','🌿','#2fb35a'],['Restmüll','🗑️','#7a8691']];
+const POOL=[['🔋','Batterie',0],['🔌','Kabel',0],['💾','Festplatte',0],['📱','Altes Handy',0],['📰','Zeitung',1],['📦','Karton',1],['🧴','Flasche',2],['🥛','Becher',2],['🍌','Bananenschale',3],['🍂','Laub',3],['🍎','Apfelrest',3],['🚬','Zigarette',4],['🛍️','Müllsack',4]];
+const BADGES=[['🌱','Eco-Rookie','Erstes Spiel beendet'],['🏅','Recycling-Meister','90 % Genauigkeit'],['🛡️','Eco-Warrior','Alle Gegenstände geschafft'],['🔥','Flammenmeister','Serie von 8']];
+const TOTAL=25,arena=$('#arena'),ov=$('#ov');let G={items:[]},AW=0,AH=0,gRaf=0;
+$('#bins').innerHTML=BIN.map((b,i)=>`<div class="bin" data-i="${i}" style="--c:${b[2]}"><b>${b[1]}</b>${b[0]}</div>`).join('');
+const mult=()=>Math.min(1+Math.floor(G.streak/3),5);
+function showStart(){ov.className='ov';ov.innerHTML=`<div style="font-size:3rem">♻️</div><h2>Bereit?</h2><p>Ziehe die Gegenstände in die richtige Tonne, bevor sie unten ankommen. Du hast 3 Leben.</p><p>🏆 Rekord: <b>${store.get('cg-best',0)}</b></p><button class="b" id="go">Spiel starten</button>`;$('#go').onclick=startGame}
+function startGame(){cancelAnimationFrame(gRaf);$$('.it').forEach(e=>e.remove());AW=arena.clientWidth;AH=arena.clientHeight;
+  G={run:true,items:[],score:0,streak:0,max:0,lives:3,spawned:0,ok:0,bad:0,miss:0,lvl:1,sp:.3,last:performance.now(),d:null};
+  ov.className='ov off';hud();gRaf=requestAnimationFrame(loop)}
+function stopGame(){G.run=false;cancelAnimationFrame(gRaf);$$('.it').forEach(e=>e.remove());G.items=[];showStart()}
+function hud(){const m=mult(),l=Math.max(G.lives,0);$('#hS').textContent='⭐ '+G.score;
+  $('#hC').innerHTML=(G.streak>=3?`<span class="fire" style="font-size:${1+m*.18}rem">🔥</span>`:'✨')+` Serie ${G.streak} · x${m}`;
+  $('#hL').textContent='❤️'.repeat(l)+'🖤'.repeat(3-l);$('#hV').textContent='Level '+G.lvl;$('#hP').style.width=(G.ok+G.bad+G.miss)/TOTAL*100+'%'}
+function spawn(){const p=POOL[Math.random()*POOL.length|0],el=document.createElement('div');el.className='it';el.style.setProperty('--c',BIN[p[2]][2]);el.innerHTML=`<span>${p[0]}</span><small>${p[1]}</small>`;
+  const it={el,b:p[2],x:Math.random()*(AW-80),y:-80,v:80+Math.random()*25,r:Math.random()*40-20,w:Math.random()*40-20,ph:Math.random()*6,drag:false};
+  el._it=it;arena.appendChild(el);G.items.push(it);G.spawned++}
+const paint=it=>it.el.style.transform=`translate3d(${it.x}px,${it.y}px,0) rotate(${it.drag?0:it.r}deg)`;
+function drop_(it){G.items=G.items.filter(i=>i!==it);it.el.classList.add('out');setTimeout(()=>it.el.remove(),300)}
+function loop(t){
+  if(!G.run)return;
+  const dt=Math.min((t-G.last)/1000,.05);G.last=t;
+  const k=1+G.lvl*.1+Math.min(G.streak,12)*.03; /* Tempo steigt mit Level und Serie */
+  if((G.sp-=dt)<=0&&G.spawned<TOTAL){spawn();G.sp=Math.max(.8,2.1-G.lvl*.18)}
+  for(const it of [...G.items]){
+    if(!it.drag){it.y+=it.v*k*dt;it.r+=it.w*dt*.5;it.x=Math.max(0,Math.min(AW-76,it.x+Math.sin(t/450+it.ph)*18*dt))}
+    paint(it);if(!it.drag&&it.y>AH-135)missed(it)}
+  if(G.lives<=0)return endGame(false);
+  if(G.spawned>=TOTAL&&!G.items.length)return endGame(true);
+  gRaf=requestAnimationFrame(loop)}
+function missed(it){const r=it.el.getBoundingClientRect();drop_(it);G.streak=0;G.lives--;G.miss++;pop(r.left+38,r.top+20,'💔 Verpasst','#e5383b');navigator.vibrate&&navigator.vibrate(60);hud()}
+const binAt=(x,y)=>$$('.bin').find(b=>{const r=b.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top-30&&y<=r.bottom+10});
+arena.addEventListener('pointerdown',e=>{const el=e.target.closest('.it');if(!el||!G.run)return;const it=el._it,r=arena.getBoundingClientRect();
+  it.drag=true;it.ox=e.clientX-r.left-it.x;it.oy=e.clientY-r.top-it.y;G.d=it;el.classList.add('drag');arena.setPointerCapture(e.pointerId)});
+arena.addEventListener('pointermove',e=>{const it=G.d;if(!it)return;const r=arena.getBoundingClientRect();
+  it.x=Math.max(0,Math.min(AW-76,e.clientX-r.left-it.ox));it.y=Math.max(-20,Math.min(AH-60,e.clientY-r.top-it.oy));
+  const b=binAt(e.clientX,e.clientY);$$('.bin').forEach(x=>x.classList.toggle('hov',x===b))});
+function release(e){const it=G.d;if(!it)return;G.d=null;it.drag=false;it.el.classList.remove('drag');$$('.bin').forEach(x=>x.classList.remove('hov'));
+  const b=binAt(e.clientX,e.clientY);if(!b)return;const r=b.getBoundingClientRect(),cx_=r.left+r.width/2,cy=r.top+r.height/2;drop_(it);
+  if(+b.dataset.i===it.b){ /* richtig: Punkte, Konfetti, Combo */
+    G.ok++;G.streak++;G.max=Math.max(G.max,G.streak);const m=mult(),pts=10*m,lv=1+Math.floor(G.ok/4);G.score+=pts;
+    b.classList.remove('bad');void b.offsetWidth;b.classList.add('good');burst(cx_,cy,24+m*8);pop(cx_,cy,'+'+pts,'#34d27b');
+    if(G.streak%3===0)setTimeout(()=>pop(cx_,cy-45,`🔥 COMBO x${m}!`,'#f5a300'),200);
+    if(lv>G.lvl){G.lvl=lv;const a=arena.getBoundingClientRect();setTimeout(()=>pop(a.left+a.width/2,a.top+a.height/2,'LEVEL '+lv+' ⚡','#2b8be6'),400)}
+  }else{ /* falsch: Wackeln, rotes Blinken, Leben weg */
+    G.bad++;G.streak=0;G.lives--;b.classList.remove('good');void b.offsetWidth;b.classList.add('bad');
+    arena.classList.remove('shake');void arena.offsetWidth;arena.classList.add('shake');pop(cx_,cy,'✖ '+BIN[it.b][0],'#e5383b');navigator.vibrate&&navigator.vibrate(90)}
+  hud()}
+arena.addEventListener('pointerup',release);arena.addEventListener('pointercancel',release);
+addEventListener('resize',()=>{AW=arena.clientWidth;AH=arena.clientHeight});
+function endGame(win){G.run=false;cancelAnimationFrame(gRaf);
+  const n=G.ok+G.bad+G.miss,acc=n?Math.round(G.ok/n*100):0,best=store.get('cg-best',0),rec=G.score>best;if(rec)store.set('cg-best',G.score);
+  const have=store.get('cg-badges',[]),fresh=[];[true,acc>=90&&n>=10,win,G.max>=8].forEach((e,i)=>{if(e&&!have.includes(i)){have.push(i);fresh.push(i)}});store.set('cg-badges',have);
+  ov.className='ov';ov.innerHTML=`<div style="font-size:3rem">${win?'🏆':'🌍'}</div><h2>${win?'Gewonnen!':'Game Over'}</h2>${rec?'<span class="bg" style="background:var(--amb)">🎉 Neuer Rekord!</span>':''}
+  <div class="sg"><div><b>${G.score}</b>Punkte</div><div><b>${acc} %</b>Genauigkeit</div><div><b>${G.max}</b>Beste Serie</div><div><b>${Math.max(best,G.score)}</b>Rekord</div></div>
+  <div class="bgs">${BADGES.map((b,i)=>`<span class="bdg ${have.includes(i)?'':'lock'} ${fresh.includes(i)?'new':''}" title="${b[2]}">${b[0]} ${b[1]}</span>`).join('')}</div><button class="b" id="go">Nochmal spielen</button>`;
+  $('#go').onclick=startGame;
+  if(win){const r=arena.getBoundingClientRect();[0,1,2].forEach(i=>setTimeout(()=>burst(r.left+r.width*(.2+i*.3),r.top+r.height*.4,50),i*250))}}
+
+/* ===== Start ===== */
+showStart();route();
+</script>
+</body>
+</html>
