@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Spiel – Code Green</title>
+<script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem('cg-theme'))||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}</script>
+<link rel="stylesheet" href="style.css"></head>
+<body data-p="spiel"><canvas id="fx"></canvas><main class="wrap gm">
+<h1>Mülltrennungs-Spiel</h1>
+<p>Ziehe jeden Gegenstand in die Tonne mit der gleichen Farbe. Mit einer Serie gibt es mehr Punkte, aber die Gegenstände werden schneller!</p>
+<div class="c"><div class="hud"><span id="hS">Punkte: 0</span><span id="hC">Serie 0 · x1</span><span id="hL">Leben: 3/3</span><span id="hV">Level 1</span></div>
+<div class="pr"><i id="hP"></i></div>
+<div class="arena" id="arena"><div class="bins" id="bins"></div><div class="ov" id="ov"></div></div></div>
+</main><script src="main.js"></script><script src="game.js"></script></body></html>
